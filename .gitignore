@@ -167,3 +167,9 @@ cython_debug/
 # run results
 bertembed*/
 notebooks/ExampleToReview.csv
+
+# snippets
+snippets/
+
+.DS_Store
+**/.DS_Store

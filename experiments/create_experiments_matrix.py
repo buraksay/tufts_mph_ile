@@ -2,30 +2,73 @@ import itertools
 
 import pandas as pd
 
-# Define the long-form options for each dimension
-stopwords = ['Standard Stopwords', 'Custom Stopwords', 'Remove Punctuation']
-stemmer = ['Porter Stemmer', 'Alternative Stemmer']
-ngram = ['Uni-gram', 'Bi-gram', 'Tri-gram']
-vectorizer = ['TF-IDF', 'BoW']
-classifier = ['Logistic Regression', 'Naive Bayes', 'Random Forest', 'XGBoost']
-
 # Define mappings from long-form to abbreviation
-stopwords_map = {'Standard Stopwords': 'std', 'Custom Stopwords': 'csw', 'Remove Punctuation': 'pun'}
-stemmer_map = {'Porter Stemmer': 'por', 'Alternative Stemmer': 'alt'}
-ngram_map = {'Uni-gram': 'uni', 'Bi-gram': 'bi', 'Tri-gram': 'tri'}
-vectorizer_map = {'TF-IDF': 'tfidf', 'BoW': 'bow'}
-classifier_map = {'Logistic Regression': 'lr', 'Naive Bayes': 'nb', 'Random Forest': 'rf', 'XGBoost': 'xgb'}
+algo_mappings = {
+    "Stopwords": {
+        "sw.std": {"name": "Standard Stopwords", "func": "standard_stopwords"},
+        "sw.csw": {"name": "Custom Stopwords", "func": "custom_stopwords"},
+        "sw.pun": {"name": "Remove Punctuation", "func": "remove_punctuation"},
+    },
+    "Stemmer": {
+        "stem.por": {"name": "Porter Stemmer", "func": "porter_stemmer"},
+        "stem.snow": {"name": "Snowball Stemmer", "func": "snowball_stemmer"},
+    },
+    "Ngram": {
+        "ngram.uni": {"name": "Uni-gram", "func": "uni_gram"},
+        "ngram.bi": {"name": "Bi-gram", "func": "bi_gram"},
+        "ngram.tri": {"name": "Tri-gram", "func": "tri_gram"},
+    },
+    "Vectorizer": {
+        "vec.tfidf": {"name": "TF-IDF", "func": "tfidf"},
+        "vec.bow": {"name": "Bag of Words", "func": "bag_of_words"},
+    },
+    "Classifier": {
+        "clf.lr": {"name": "Logistic Regression", "func": "logistic_regression"},
+        "clf.nb": {"name": "Naive Bayes", "func": "naive_bayes"},
+        "clf.rf": {"name": "Random Forest", "func": "random_forest"},
+        "clf.xgb": {"name": "XGBoost", "func": "xgboost"},
+    },
+}
 
-combinations = list(itertools.product(stopwords, stemmer, ngram, vectorizer, classifier))
+# Create Tag using the mappings
+def create_tag(row):
+    tag_parts = []
+    for dimension_name in dimensions.keys():
+        long_form_name = row[dimension_name]
+        abbrev = mappings[dimension_name][long_form_name]
+        tag_parts.append(abbrev)
+    return "-".join(tag_parts)
 
-# Create DataFrame with ID and Tag
-df = pd.DataFrame(combinations, columns=['Stopwords', 'Stemmer', 'N-gram', 'Vectorizer', 'Classifier'])
-df['ID'] = ['EXP{:03d}'.format(i+1) for i in range(len(df))]
-df['Tag'] = df.apply(lambda row: f"{stopwords_map[row['Stopwords']]}-{stemmer_map[row['Stemmer']]}-{ngram_map[row['N-gram']]}-{vectorizer_map[row['Vectorizer']]}-{classifier_map[row['Classifier']]}", axis=1)
 
-# Rearrange columns for readability
-df = df[['ID', 'Tag', 'Stopwords', 'Stemmer', 'N-gram', 'Vectorizer', 'Classifier']]
+if __name__ == '__main__':
+    # Extract long-form options and mappings from algo_mappings
+    dimensions = {}
+    mappings = {}
 
-# Save for later use
-df.to_csv('nlp_experiment_matrix.csv', index=False)
-print(df.head())
+    for dimension_name, options in algo_mappings.items():
+        # Extract the long-form names
+        dimensions[dimension_name] = [
+            option_data["name"] for option_data in options.values()
+        ]
+        # Create mapping from long-form name to abbreviation
+        mappings[dimension_name] = {
+            option_data["name"]: abbrev for abbrev, option_data in options.items()
+        }
+
+    # Create combinations
+    combinations = list(itertools.product(*dimensions.values()))
+
+    # Create DataFrame with ID and Tag
+    df = pd.DataFrame(combinations, columns=list(dimensions.keys()))
+    df["ID"] = ["EXP{:03d}".format(i + 1) for i in range(len(df))]
+
+    df["Tag"] = df.apply(create_tag, axis=1)
+
+    # Rearrange columns for readability
+    column_order = ["ID", "Tag"] + list(dimensions.keys())
+    df = df[column_order]
+
+    # Save for later use
+    df.to_csv("nlp_experiment_matrix2.csv", index=False)
+    print(df.head())
+    print(f"\nTotal experiments: {len(df)}")
