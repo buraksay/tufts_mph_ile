@@ -78,13 +78,13 @@ def train_classifier(
 
 
 def get_stopword_func(algo_list):
-    if "sw.csw" in algo_list:
+    if config.SW_CSW in algo_list:
         logging.info("Using custom stopwords function")
         return data_tools.custom_stopwords
-    elif "sw.std" in algo_list:
+    elif config.SW_STD in algo_list:
         logging.info("Using standard stopwords function")
         return data_tools.standard_stopwords
-    elif "sw.pun" in algo_list:
+    elif config.SW_PUN in algo_list:
         logging.info("Using punctuation removal function")
         return data_tools.remove_punctuation
     else:
@@ -94,10 +94,10 @@ def get_stopword_func(algo_list):
 
 
 def get_vectorizer_func(algo_list):
-    if "vec.tfidf" in algo_list:
+    if config.VEC_TFIDF in algo_list:
         logging.info("Using TF-IDF vectorizer")
         return config.TFIDF
-    elif "vec.bow" in algo_list:
+    elif config.VEC_BOW in algo_list:
         logging.info("Using Bag of Words vectorizer")
         return config.BAG_OF_WORDS
     else:
@@ -107,10 +107,10 @@ def get_vectorizer_func(algo_list):
 
 
 def get_stemmer_func(algo_list):
-    if "stem.snow" in algo_list:
+    if config.STEM_SNOW in algo_list:
         logging.info("Using Snowball stemmer")
         return data_tools.snowball_stemmer
-    elif "stem.por" in algo_list:
+    elif config.STEM_POR in algo_list:
         logging.info("Using Porter stemmer")
         return data_tools.porter_stemmer
     else:
@@ -120,13 +120,13 @@ def get_stemmer_func(algo_list):
 
 
 def get_ngram(algo_list):
-    if "ngram.uni" in algo_list:
+    if config.NGRAM_UNI in algo_list:
         logging.info("Using Unigram model")
         return config.UNIGRAM
-    elif "ngram.bi" in algo_list:
+    elif config.NGRAM_BI in algo_list:
         logging.info("Using Bigram model")
         return config.BIGRAM
-    elif "ngram.tri" in algo_list:
+    elif config.NGRAM_TRI in algo_list:
         logging.info("Using Trigram model")
         return config.TRIGRAM
     else:
@@ -134,16 +134,16 @@ def get_ngram(algo_list):
 
 
 def get_classifier_func(algo_list):
-    if "clf.nb" in algo_list:
-        logging.info=("Using Naive Bayes classifier")
+    if config.CLF_NB in algo_list:
+        logging.info("Using Naive Bayes classifier")
         return clf_tools.naive_bayes_classifier
-    elif "clf.lr" in algo_list:
+    elif config.CLF_LR in algo_list:
         logging.info("Using Logistic Regression classifier")
         return clf_tools.logistic_regression
-    elif "clf.xgb" in algo_list:
+    elif config.CLF_XGB in algo_list:
         logging.info("Using XGBoost classifier")
         return clf_tools.xgboost_classifier
-    elif "clf.rf" in algo_list:
+    elif config.CLF_RF in algo_list:
         logging.info("Using Random Forest classifier")
         return clf_tools.random_forest_classifier
     else:
