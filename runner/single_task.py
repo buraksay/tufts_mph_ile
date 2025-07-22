@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import sys
@@ -7,23 +8,27 @@ from datetime import datetime
 
 # std-por-uni-tfidf-lr
 # pun-alt-bi-bow-nb
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory, which is the project root (.../tufts_mph_ile)
+CODE_DIR = os.path.dirname(script_dir)
+# Add the project root to the Python path to ensure all modules can be found
+if CODE_DIR not in sys.path:
+    sys.path.insert(0, CODE_DIR)
 
-# algo_mappings = experiments.algo_mappings
+import config
+import data_tools
+from experiments import algo_mappings
+from task_multiplexer import preprocess_data, split_data, train_classifier
 
-CODE_DIR = os.environ.get(
-    "CODE_DIR" #, os.path.join(os.environ.get("HOME"), "code", "NLP-for-ORI")
-)
 DATA_DIR = os.environ.get(
-    "DATA_DIR", "/Users/baba/proj/aphaproject/burak_local/data"
+    "DATA_DIR", config.DATA_DIR
 )  # , os.path.join(CODE_DIR, "data"))
-DATA_FILE = os.environ.get("DATA_FILE", "Data.xlsx")
-RES_DIR = os.environ.get("RES_DIR", os.path.join(CODE_DIR, "results"))
+DATA_FILE = os.environ.get("DATA_FILE", config.DATA_FILE_NAME)
+RES_DIR = os.environ.get("RES_DIR", os.path.join(CODE_DIR, config.RES_DIR_NAME))
 
 
-SEED = 202507
-SPLIT_DATE = "2020"
-PREPROCESSOR = "tokenstem_tfidf"
-CLASSIFIER = "logistic_regression"
+# PREPROCESSOR = "tokenstem_tfidf"
+# CLASSIFIER = "logistic_regression"
 
 # OUTPUT_DIR = os.path.join(RES_DIR, f"analysis_seed{SEED}_spliton{SPLIT_DATE}")
 # STEMMED_TOKENIZED_PATH = os.environ.get(
@@ -76,7 +81,7 @@ def run_single_task(task_id, task_tag, batch_output_dir):
     logging.info("INPUT xlsx_path: %s", xlsx_path)
     logging.info("OUTPUT dir: %s", OUTPUT_DIR)
     x_df, y_df, k_df = data_tools.read_xlsx_into_x_y_k_dfs(xlsx_path)
-    logging.info("X DataFrame head: %s", x_df.head())
+    logging.debug("X DataFrame head: %s", x_df.head())
 
     x_df_pp = preprocess_data(task_id, task_tag, output_dir=OUTPUT_DIR, algo_list=algo_list, df=x_df)
 
@@ -84,11 +89,11 @@ def run_single_task(task_id, task_tag, batch_output_dir):
         x_df=x_df_pp,
         y_df=y_df,
         k_df=k_df,
-        split_date=SPLIT_DATE,
-        seed=SEED,
+        split_date=config.SPLIT_DATE,
+        seed=config.SEED,
         output_dir=OUTPUT_DIR,
     )
-    logging.info("Train DataFrame head: %s", xtr_df.head())
+    logging.debug("Train DataFrame head: %s", xtr_df.head())
     train_classifier(
         xtr_df=xtr_df,
         ytr_df=ytr_df,
@@ -98,7 +103,7 @@ def run_single_task(task_id, task_tag, batch_output_dir):
         kte_df=ktest_df,
         algo_list=algo_list,
         output_dir=OUTPUT_DIR,
-        seed=SEED
+        seed=config.SEED,
     )
     # train_classifier()
     # breakpoint()
@@ -123,22 +128,27 @@ def test_validate_algo_list():
 
 
 if __name__ == '__main__':
-    if os.path.exists(CODE_DIR):
-        sys.path.append(CODE_DIR)
-    import data_tools
-    from experiments import algo_mappings
-    from task_multiplexer import preprocess_data, split_data, train_classifier
-
     logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO,
+        format=config.LOG_MSG_FORMAT,
+        datefmt=config.LOG_DATE_FORMAT,
+        level=config.LOG_LEVEL,
     )
-
-    # Generate datetime string for results directory
-    datetime_str = datetime.now().strftime("%Y%m%d%H%M")
+    parser = argparse.ArgumentParser(description="Run a single task with specified algorithms.")
+    parser.add_argument("--id", type=str, required=True, help="Task ID")
+    parser.add_argument("--tag", type=str, required=True, help="Task tag with algorithms")
+    parser.add_argument("--batch", type=str, required=False, help="Batch output directory")
+    args = parser.parse_args()
+    task_id = args.id
+    task_tag = args.tag
+    batch_dir = args.batch 
+    
+    if not batch_dir:
+        datetime_str = datetime.now().strftime("%Y%m%d%H%M")
+        batch_dir = f"batch_{datetime_str}"
+        
+    BATCH_OUTPUT_DIR = os.path.join(RES_DIR, batch_dir)
     BATCH_OUTPUT_DIR = os.environ.get(
-        "BATCH_OUTPUT_DIR", os.path.join(RES_DIR, f"batch_{datetime_str}")
+        "BATCH_OUTPUT_DIR", os.path.join(RES_DIR, batch_dir)
     )
     os.makedirs(BATCH_OUTPUT_DIR, exist_ok=True)
     logging.info(f"Batch output directory: {BATCH_OUTPUT_DIR}")
@@ -146,9 +156,14 @@ if __name__ == '__main__':
     logging.info(f"Data directory: {DATA_DIR}")
     logging.info(f"Data file: {DATA_FILE}")
     logging.info(f"Results directory: {RES_DIR}")
-    logging.info(f"Seed: {SEED}")
-    logging.info(f"Split date: {SPLIT_DATE}")
+    logging.info(f"Seed: {config.SEED}")
+    logging.info(f"Split date: {config.SPLIT_DATE}")
 
     # xlsx_path = os.path.join(DATA_DIR, "Data.xlsx")
     test_validate_algo_list()
-    run_single_task(task_id="EXP001", task_tag="sw.std-stem.por-ngram.uni-vec.tfidf-clf.lr", batch_output_dir=BATCH_OUTPUT_DIR)
+    # run_single_task(task_id="EXP001", task_tag="sw.std-stem.por-ngram.uni-vec.tfidf-clf.lr", batch_output_dir=BATCH_OUTPUT_DIR)
+    run_single_task(
+        task_id=task_id, #"EXP001",
+        task_tag=task_tag,#"sw.std-stem.snow-ngram.bi-vec.tfidf-clf.lr",
+        batch_output_dir=BATCH_OUTPUT_DIR,
+    )

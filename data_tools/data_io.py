@@ -26,7 +26,7 @@ def save_csv_file(df, filename,
     df.to_csv(out_path, header=True)
     logging.info("saved %s with shape %s to file %s" % (
         filename, df.shape, out_path))
-    logging.info("[%s] sample 3 rows:%s", filename, df.head(3))
+    logging.debug("[%s] sample 3 rows:%s", filename, df.head(3))
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+import config
 import data_tools
 import numpy as np
 import pandas as pd
@@ -11,32 +12,33 @@ import sklearn.model_selection
 import sklearn.pipeline
 import sklearn.preprocessing
 
-SCORING = 'roc_auc'
-N_SPLITS = 5
 CLF_SRC_DIR = os.path.split(os.path.abspath(__file__))[0]
 
 def logistic_regression(
     xtr_df, ytr_df, ktr_df, 
     xte_df, yte_df, kte_df, 
-    output_dir, algo_list, seed
+    output_dir, algo_list, seed,
+    vectorizer, ngram_range
 ):
-    preproc_name = 'CountVectorizer'
+    # preproc_name = 'CountVectorizer'
     classifier_name = 'logistic_regression'
+    # if using pre-trained vectorizer, pass it here
     pipe, clf_tuning_kws = make_clf_pipeline(
-        preproc_name, classifier_name, memory_dir=output_dir
+        vectorizer, classifier_name, memory_dir=output_dir, vectorizer=None, ngram_range=ngram_range
     )
     kfold_cv = sklearn.model_selection.StratifiedKFold(
-        n_splits=N_SPLITS, shuffle=True, random_state=seed
+        n_splits=config.N_SPLITS, shuffle=True, random_state=seed
     )
 
     searcher = sklearn.model_selection.GridSearchCV(
         pipe,
         clf_tuning_kws,
-        scoring=SCORING,
+        scoring=config.SCORING,
         cv=kfold_cv,
         return_train_score=True,
         refit=True,
         error_score="raise",
+        verbose=3
     )
     # the grid search expects a column vector of labels
     x_vals = [str(doc) for doc in xtr_df.values[:,0]]
@@ -44,13 +46,15 @@ def logistic_regression(
     searcher.fit(x_vals, y_vals)
     logging.info("Best parameters found: %s", searcher.best_params_)
     cv_tr_perf_df, cv_va_perf_df = extract_perf_df_from_cv_obj(searcher)
+    out_csv_file = "perf_by_hyper_%dfoldCV_seed%d_{split}.csv" % (config.N_SPLITS, seed)
     out_csv_path = os.path.join(
-        output_dir,
-        "perf_by_hyper_%dfoldCV_seed%d_{split}.csv" % (N_SPLITS, seed),
+        output_dir, out_csv_file
     )
-    cv_tr_perf_df.to_csv(out_csv_path.format(split="traincv"), index=False)
-    cv_va_perf_df.to_csv(out_csv_path.format(split="validcv"), index=False)
+    cv_tr_perf_df.to_csv(out_csv_path.format(split="train_cross_val"), index=False)
+    cv_va_perf_df.to_csv(out_csv_path.format(split="test_cross_val"), index=False)
     logging.info("Wrote hyper search info to: %s", out_csv_path)
+
+    save_fit_tokens(searcher.best_estimator_, output_dir)
 
     xte_vals = [str(doc) for doc in xte_df.values[:, 0]]
     yte_vals = yte_df.values[:, 0]
@@ -61,9 +65,9 @@ def logistic_regression(
     logging.info("Confusion Matrix:\n%s", conf_matrix)  
     # @TODO: save confusion matrix to file
     # @TODO: save roc-auc to file
-    
+
     # score with scoring value
-    test_score = sklearn.metrics.get_scorer(SCORING)(
+    test_score = sklearn.metrics.get_scorer(config.SCORING)(
         searcher.best_estimator_, xte_vals, yte_vals
     )
 
@@ -76,31 +80,83 @@ def logistic_regression(
     best_estimator_file_path = os.path.join(output_dir, "best_estimator_results.csv")
     best_estimator_df.to_csv(best_estimator_file_path, index=False)
     logging.info("Wrote best estimator results to: %s", best_estimator_file_path)
-
+    logging.info("Test score: %f", test_score)
 
 def naive_bayes(
-    xtr_df, ytr_df, ktr_df, xte_df, yte_df, kte_df, output_dir, algo_list, seed
+    xtr_df,
+    ytr_df,
+    ktr_df,
+    xte_df,
+    yte_df,
+    kte_df,
+    output_dir,
+    algo_list,
+    seed,
+    vectorizer,
+    ngram_range,
 ):
 
     pass  # Implement the Naive Bayes logic here
 
 
 def random_forest(
-    xtr_df, ytr_df, ktr_df, xte_df, yte_df, kte_df, output_dir, algo_list, seed
+    xtr_df,
+    ytr_df,
+    ktr_df,
+    xte_df,
+    yte_df,
+    kte_df,
+    output_dir,
+    algo_list,
+    seed,
+    vectorizer,
+    ngram_range,
 ):
     pass  # Implement the Random Forest logic here
 
 
 def xgboost(
-    xtr_df, ytr_df, ktr_df, xte_df, yte_df, kte_df, output_dir, algo_list, seed
+    xtr_df,
+    ytr_df,
+    ktr_df,
+    xte_df,
+    yte_df,
+    kte_df,
+    output_dir,
+    algo_list,
+    seed,
+    vectorizer,
+    ngram_range,
 ):
     pass  # Implement the XGBoost logic here
+
+def save_fit_tokens(best_pipeline, output_dir):
+    """
+    Saves the fitted tokens from the vectorizer in the pipeline to a JSON file.
+    
+    Parameters:
+    best_pipeline (sklearn.pipeline.Pipeline): The trained pipeline containing the vectorizer.
+    output_dir (str): The directory where the tokens will be saved.
+    """
+    vectorizer = best_pipeline.named_steps['txt2vec']
+    tokens = vectorizer.get_feature_names_out()
+    data_tools.save_csv_file(
+        pd.DataFrame(tokens, columns=['tokens']),
+        filename='fitted_tokens.csv',
+        output_dir=output_dir
+    )
+    tokens_file_path = os.path.join(output_dir, "fitted_tokens.json")
+    
+    with open(tokens_file_path, 'w') as f:
+        json.dump(tokens.tolist(), f)
+    
+    logging.info("Saved fitted tokens to: %s", tokens_file_path)
 
 
 # TODO: implement ngram support
 # TODO: implement vectorizer support
 def make_clf_pipeline(
-    preproc_name, clf_name, memory_dir=None, vectorizer=None, ngram_range=None):
+    preproc_name, clf_name, memory_dir, vectorizer=None, ngram_range=config.UNIGRAM):
     """
     Creates a scikit-learn pipeline for a classifier with specified preprocessing and classifier configurations.
 
@@ -116,19 +172,18 @@ def make_clf_pipeline(
         - sklearn.pipeline.Pipeline: The constructed scikit-learn pipeline with the specified preprocessing and classifier.
         - dict: A dictionary of classifier tuning keywords for hyperparameter tuning.
     """
-    logging.info("Creating classifier pipeline with preproc: %s, clf: %s", preproc_name, clf_name)
+    logging.info("Creating classifier pipeline with preproc: %s, clf: %s, vectorizer: %s, ngram_range: %s", preproc_name, clf_name, vectorizer, ngram_range)
     steps = list()
 
     # Use pre-trained vectorizer if provided, otherwise create new one
     if vectorizer is not None:
         logging.info("Using pre-trained vectorizer")
-        steps.append(("txt2vec", vectorizer))
+        steps.append(("txt2vec", "passthrough"))
     else:
-        # Create new vectorizer with optional ngram_range
+        # Create new vectorizer with optional ngram_range 
         vectorizer_kwargs = {}
-        if ngram_range is not None:
-            vectorizer_kwargs['ngram_range'] = ngram_range
-            logging.info("Using ngram_range: %s", ngram_range)   
+        vectorizer_kwargs['ngram_range'] = ngram_range
+        logging.info("Using ngram_range: %s", ngram_range)   
                  
         if preproc_name.lower().count("countvec"):
             steps.append(("txt2vec", sklearn.feature_extraction.text.CountVectorizer(**vectorizer_kwargs)))
@@ -155,7 +210,7 @@ def make_clf_pipeline(
         else:
             mod = getattr(mod, name)
     steps.append(("clf", mod(**clf_kws)))
-    pipe = sklearn.pipeline.Pipeline(steps, memory=memory_dir)
+    pipe = sklearn.pipeline.Pipeline(steps, memory=memory_dir, verbose=True)
     return pipe, clf_tuning_kws
 
 
