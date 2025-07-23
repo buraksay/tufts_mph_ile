@@ -169,7 +169,11 @@ bertembed*/
 notebooks/ExampleToReview.csv
 
 # snippets
-snippets/
+# snippets/
 
 .DS_Store
 **/.DS_Store
+
+# **/*.csv
+# **/*.xls
+# **/*.xlsx

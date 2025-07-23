@@ -1,50 +1,18 @@
 import logging
+import re
+from collections import Counter
 
 import data_tools
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords
+import seaborn as sns
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
-STANDARD_SW = set(stopwords.words('english'))
-CUSTOM_SW = set(["example", "custom", "stopword", "list"])
-
-def apply_standard_stopwords(text):
-    tokens = word_tokenize(text)
-    tokens = [word for word in tokens if word.lower() not in STANDARD_SW]
-    return ' '.join(tokens)
-
-def standard_stopwords(df, column='Narrative'):
-    """
-    Apply standard stopwords removal to a DataFrame column.
-    """
-    df[column] = df[column].apply(apply_standard_stopwords)
-    return df[column]
-
-
-def apply_custom_stopwords(text):
-    tokens = word_tokenize(text)
-    tokens = [word for word in tokens if word.lower() not in CUSTOM_SW]
-    return ' '.join(tokens)
-
-def custom_stopwords(df, column='Narrative'):
-    """
-    Apply custom stopwords removal to a DataFrame column.
-    """
-    df[column] = df[column].apply(apply_custom_stopwords)
-    return df[column]
-
-
-# noop
-def remove_punctuation(df, column="Narrative"):
-    return df[column]
-
-
-
-
-
-
+# --- 1. Load and Preprocess Your Data ---
+# Assuming you have a DataFrame with a 'narrative' column
+# df = pd.read_csv('your_data.csv')
 TOP_COUNT = 50
 BOTTOM_COUNT = 50
 
@@ -59,15 +27,10 @@ def run_frequency_analysis(df, output_dir):
     data_tools.save_csv_file(freq_df, "word_frequencies.csv", output_dir=output_dir)
 
     logging.info(
-        f"Top %d most frequent words:\n%s",
-        TOP_COUNT,
-        freq_df.sort_values("doc_percentage", ascending=False).head(TOP_COUNT),
+        f"Top %d most frequent words:\n%s", TOP_COUNT,
+        freq_df.sort_values("doc_percentage", ascending=False).head(TOP_COUNT)
     )
-    logging.info(
-        f"\nBottom %d least frequent words:\n%s",
-        BOTTOM_COUNT,
-        freq_df.tail(BOTTOM_COUNT),
-    )
+    logging.info(f"\nBottom %d least frequent words:\n%s", BOTTOM_COUNT, freq_df.tail(BOTTOM_COUNT))
     plot_frequency_analysis(freq_df)
 
     rare_words, common_words = analyze_thresholds(freq_df, len(df))
@@ -89,7 +52,7 @@ def run_frequency_analysis(df, output_dir):
         logging.info(f"Original: {df.iloc[i]['Narrative'][:100]}...")
         logging.info(f"Processed: {df.iloc[i]['final_processed'][:100]}...")
         logging.info("-" * 50)
-
+        
     return filtered_vectorizer, kept_words
 
 

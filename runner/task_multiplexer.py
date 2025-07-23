@@ -21,7 +21,7 @@ def preprocess_data(task_id, task_tag, output_dir, algo_list, df):
     # TODO: fork for custom_stopwords
     stopword_func = get_stopword_func(algo_list)
     logging.info("applying stopwords with function: %s", stopword_func.__name__)
-    df["Narrative"] = df["Narrative"].apply(stopword_func)
+    df["Narrative"] = stopword_func(df, "Narrative")
     data_tools.save_csv_file(df, "x_df_stopwords.csv", output_dir=output_dir)
 
     # TODO: fork for snowball_stemmer

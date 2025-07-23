@@ -83,32 +83,37 @@ def run_single_task(task_id, task_tag, batch_output_dir):
     x_df, y_df, k_df = data_tools.read_xlsx_into_x_y_k_dfs(xlsx_path)
     logging.debug("X DataFrame head: %s", x_df.head())
 
-    x_df_pp = preprocess_data(task_id, task_tag, output_dir=OUTPUT_DIR, algo_list=algo_list, df=x_df)
+    # DELETE BEGIN
+    if not x_df.empty:
+        import snippets
+        snippets.run_frequency_analysis(x_df, OUTPUT_DIR)
+    else:
+    # END DELETE
+        x_df_pp = preprocess_data(task_id, task_tag, output_dir=OUTPUT_DIR, algo_list=algo_list, df=x_df)
 
-    (xtr_df, ytr_df, ktr_df), (xtest_df, ytest_df, ktest_df) = split_data(
-        x_df=x_df_pp,
-        y_df=y_df,
-        k_df=k_df,
-        split_date=config.SPLIT_DATE,
-        seed=config.SEED,
-        output_dir=OUTPUT_DIR,
-    )
-    logging.debug("Train DataFrame head: %s", xtr_df.head())
-    train_classifier(
-        xtr_df=xtr_df,
-        ytr_df=ytr_df,
-        ktr_df=ktr_df,
-        xte_df=xtest_df,
-        yte_df=ytest_df,
-        kte_df=ktest_df,
-        algo_list=algo_list,
-        output_dir=OUTPUT_DIR,
-        seed=config.SEED,
-    )
-    # train_classifier()
-    # breakpoint()
-    if batch_output_dir:
-        return
+        (xtr_df, ytr_df, ktr_df), (xtest_df, ytest_df, ktest_df) = split_data(
+            x_df=x_df_pp,
+            y_df=y_df,
+            k_df=k_df,
+            split_date=config.SPLIT_DATE,
+            seed=config.SEED,
+            output_dir=OUTPUT_DIR,
+        )
+        logging.debug("Train DataFrame head: %s", xtr_df.head())
+        train_classifier(
+            xtr_df=xtr_df,
+            ytr_df=ytr_df,
+            ktr_df=ktr_df,
+            xte_df=xtest_df,
+            yte_df=ytest_df,
+            kte_df=ktest_df,
+            algo_list=algo_list,
+            output_dir=OUTPUT_DIR,
+            seed=config.SEED,
+        )
+        # train_classifier()
+        # breakpoint()
+
 
 
 def test_validate_algo_list():

@@ -1,5 +1,8 @@
 {
     "CLF__constructor": "xgboost.XGBClassifier",
+    "tree_method": "hist",
+    "early_stopping_rounds": 2,
+    
     "class_weight": "balanced",
     "max_depth": 6,
     "learning_rate": 0.1,

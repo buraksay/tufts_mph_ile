@@ -1,0 +1,1 @@
+from .analyze_freq2 import run_frequency_analysis
