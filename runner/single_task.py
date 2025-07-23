@@ -84,7 +84,7 @@ def run_single_task(task_id, task_tag, batch_output_dir):
     logging.debug("X DataFrame head: %s", x_df.head())
 
     # DELETE BEGIN
-    if not x_df.empty:
+    if False: #not False:
         import snippets
         snippets.run_frequency_analysis(x_df, OUTPUT_DIR)
     else:
