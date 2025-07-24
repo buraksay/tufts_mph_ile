@@ -1,14 +1,59 @@
 import logging
+import sys
 
 import data_tools
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
 STANDARD_SW = set(stopwords.words('english'))
-CUSTOM_SW = set(["example", "custom", "stopword", "list"])
+# Top 40 words by document frequency from the corpus, post
+CUSTOM_SW = set(
+    [
+        "dispatched",
+        "report",
+        "pt",
+        "care",
+        "stretcher",
+        "secured",
+        "arrival",
+        "bed",
+        "noted",
+        "given",
+        "transport",
+        "rn",
+        "transferred",
+        "scene",
+        "clear",
+        "vitals",
+        "narcan",
+        "incident",
+        "end",
+        "yo",
+        "skin",
+        "airway",
+        "hospital",
+        "rails",
+        "heroin",
+        "male",
+        "mg",
+        "er",
+        "pupils",
+        "unresponsive",
+        "patent",
+        "assisted",
+        "route",
+        "breathing",
+        "monitored",
+        "crew",
+        "pain",
+        "en",
+        "straps",
+    ]
+) | STANDARD_SW
 
 def apply_standard_stopwords(text):
     tokens = word_tokenize(text)
@@ -39,10 +84,6 @@ def custom_stopwords(df, column='Narrative'):
 # noop
 def remove_punctuation(df, column="Narrative"):
     return df[column]
-
-
-
-
 
 
 TOP_COUNT = 50

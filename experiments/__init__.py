@@ -1,1 +1,1 @@
-from .create_experiments_matrix import algo_mappings
+from .create_experiments_matrix import algo_mappings, create_experiment_matrix

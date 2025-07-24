@@ -19,7 +19,7 @@ note batch param is optional. if not provided, system time will be used.
 
 # TODO
 
-- [ ] Create custom stopwords
+- [x] Create custom stopwords
 - [ ] explore min_df max_df
 
 - [x] implement snowball stemmer
@@ -32,7 +32,7 @@ note batch param is optional. if not provided, system time will be used.
 - [ ] implement random forest
 - [ ] implement naïve bayes
 - [ ] implement xgboost
-- [ ] implement task list parser
+- [x] implement task list parser
 - [ ] implement bash runner
 
 - [ ] save roc-aux after each run

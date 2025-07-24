@@ -47,7 +47,7 @@ def run_frequency_analysis(df, output_dir):
     df["final_processed"] = df["Narrative"].apply(
         lambda x: final_text_preprocessing(x, filtered_vocabulary)
     )
-    logging.info("\nSample of final processed texts:")
+    logging.info("Sample of final processed texts:")
     for i in range(min(3, len(df))):
         logging.info(f"Original: {df.iloc[i]['Narrative'][:100]}...")
         logging.info(f"Processed: {df.iloc[i]['final_processed'][:100]}...")
@@ -166,7 +166,7 @@ def analyze_thresholds(freq_df, total_documents):
 
     # Frequency percentiles
     percentiles = [1, 5, 10, 25, 50, 75, 90, 95, 99]
-    logging.info(f"\nFrequency percentiles:")
+    logging.info(f"Frequency percentiles:")
     for p in percentiles:
         threshold = np.percentile(freq_df["total_frequency"], p)
         logging.info(f"{p}th percentile: {threshold:.0f}")
@@ -205,14 +205,7 @@ def filter_vocabulary(freq_df, texts, min_freq_threshold=2, max_doc_freq_thresho
 
 
 def basic_text_cleaning(text):
-    """Basic text cleaning before frequency analysis"""
-    # Convert to lowercase
-    text = str(text).lower()
-    # Remove extra whitespace and newlines
-    text = re.sub(r"\s+", " ", text).strip()
-    # Remove numbers and punctuation (optional - depends on your needs)
-    text = re.sub(r"[^a-zA-Z\s]", "", text)
-    return text
+    return data_tools.clean(text)
 
 
 # --- 6. Final Preprocessing Function ---

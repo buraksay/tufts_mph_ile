@@ -1,6 +1,8 @@
+import argparse
 import itertools
 
 import config
+import data_tools
 import pandas as pd
 
 # Define mappings from long-form to abbreviation
@@ -25,13 +27,13 @@ algo_mappings = {
     },
     "Classifier": {
         config.CLF_LR: {"name": "Logistic Regression", "func": config.LOGISTIC_REGRESSION},
-        config.CLF_NB: {"name": "Naive Bayes", "func": config.NAIVE_BAYES},
-        config.CLF_RF: {"name": "Random Forest", "func": config.RANDOM_FOREST},
-        config.CLF_XGB: {"name": "XGBoost", "func": config.XGBOOST},
+        # config.CLF_NB: {"name": "Naive Bayes", "func": config.NAIVE_BAYES},
+        # config.CLF_RF: {"name": "Random Forest", "func": config.RANDOM_FOREST},
+        # config.CLF_XGB: {"name": "XGBoost", "func": config.XGBOOST},
     },
 }
 # Create Tag using the mappings
-def create_tag(row):
+def create_tag(row, dimensions, mappings):
     tag_parts = []
     for dimension_name in dimensions.keys():
         long_form_name = row[dimension_name]
@@ -40,7 +42,10 @@ def create_tag(row):
     return "-".join(tag_parts)
 
 
-if __name__ == '__main__':
+def create_experiment_matrix(out_file, output_dir):
+    """
+    Create a matrix of NLP experiments based on the defined configurations.
+    """
     # Extract long-form options and mappings from algo_mappings
     dimensions = {}
     mappings = {}
@@ -62,13 +67,57 @@ if __name__ == '__main__':
     df = pd.DataFrame(combinations, columns=list(dimensions.keys()))
     df["ID"] = ["EXP{:03d}".format(i + 1) for i in range(len(df))]
 
-    df["Tag"] = df.apply(create_tag, axis=1)
+    df["Tag"] = df.apply(create_tag, args=(dimensions,mappings), axis=1)
 
     # Rearrange columns for readability
     column_order = ["ID", "Tag"] + list(dimensions.keys())
     df = df[column_order]
 
     # Save for later use
-    df.to_csv("nlp_experiment_matrix2.csv", index=False)
+    data_tools.save_csv_file(df, out_file, output_dir=output_dir, index=False)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="Generate a matrix of NLP experiments."
+    )
+    parser.add_argument(
+        "--out",
+        type=str,
+        default="nlp_experiment_matrix2.csv",
+        help="Output CSV file name (default: nlp_experiment_matrix2.csv)",
+    )
+    args = parser.parse_args()
+
+
+    # Extract long-form options and mappings from algo_mappings
+    dimensions = {}
+    mappings = {}
+
+    for dimension_name, options in algo_mappings.items():
+        # Extract the long-form names
+        dimensions[dimension_name] = [
+            option_data["name"] for option_data in options.values()
+        ]
+        # Create mapping from long-form name to abbreviation
+        mappings[dimension_name] = {
+            option_data["name"]: abbrev for abbrev, option_data in options.items()
+        }
+
+    # Create combinations
+    combinations = list(itertools.product(*dimensions.values()))
+
+    # Create DataFrame with ID and Tag
+    df = pd.DataFrame(combinations, columns=list(dimensions.keys()))
+    df["ID"] = ["EXP{:03d}".format(i + 1) for i in range(len(df))]
+
+    df["Tag"] = df.apply(create_tag, args=(dimensions,mappings), axis=1)
+
+    # Rearrange columns for readability
+    column_order = ["ID", "Tag"] + list(dimensions.keys())
+    df = df[column_order]
+
+    # Save for later use
+    df.to_csv(args.out, index=False)
     print(df.head())
     print(f"\nTotal experiments: {len(df)}")

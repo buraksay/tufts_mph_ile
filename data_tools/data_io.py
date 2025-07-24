@@ -19,11 +19,13 @@ def load_xdf_ydf_kdf_from_csv(
 
 def save_csv_file(df, filename,
         output_dir,
+        index=True,
+        header=True
         ):
     ''' Save a csv file, index assumed to be named elsewhere'''
 
     out_path = os.path.join(output_dir, filename)
-    df.to_csv(out_path, header=True)
+    df.to_csv(out_path, header=header, index=index)
     logging.info("saved %s with shape %s to file %s" % (
         filename, df.shape, out_path))
     logging.debug("[%s] sample 3 rows:%s", filename, df.head(3))
