@@ -37,17 +37,45 @@ def main():
     )
     args = parser.parse_args()
 
-    # --- 2. Configure Logging ---
-    logging.basicConfig(
-        format=config.LOG_MSG_FORMAT,
-        datefmt=config.LOG_DATE_FORMAT,
-        level=config.LOG_LEVEL,
-    )
-
-    # --- 3. Create a single batch directory for this entire run ---
     # The results for each individual task will be saved inside this directory.
     batch_output_dir = get_batch_dir(RES_DIR)
+
+    log_file_path = os.path.join(batch_output_dir, "batch_run.log")
+    # Get the root logger. Don't use basicConfig, as it can only be called once.
+    logger = logging.getLogger()
+    logger.setLevel(config.LOG_LEVEL)  # Set the lowest level to capture all messages.
+    # Create a formatter to use for both handlers
+    formatter = logging.Formatter(
+        fmt=config.LOG_MSG_FORMAT, datefmt=config.LOG_DATE_FORMAT
+    )
+    # Create a handler for console output (stdout)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    # Create a handler for file output
+    file_handler = logging.FileHandler(log_file_path)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    results_file_path = os.path.join(batch_output_dir, "batch_run_results.csv")
+    results_logger = logging.getLogger("results_logger")
+    results_logger.setLevel(logging.INFO)
+    # Add a handler to write to the results CSV file.
+    results_file_handler = logging.FileHandler(results_file_path)
+    # Use a minimal formatter that only outputs the message itself.
+    results_file_handler.setFormatter(logging.Formatter("%(message)s"))
+    results_logger.addHandler(results_file_handler)
+    # Prevent results from being passed to the main logger.
+    results_logger.propagate = False
+
     logging.info(f"Master output directory for this batch run: {batch_output_dir}")
+    results_logger = logging.getLogger("results_logger")
+    results_logger.setLevel(logging.INFO)
+    logging.info(f"Logging results to: {results_file_path}")
+    # Write the header to the results CSV file.
+    # NOTE: Adjust the header based on the actual keys in the dictionary returned by run_single_task.
+    results_header = "task_id,task_tag,f1_score,roc_auc,precision,recall,accuracy"
+    results_logger.info(results_header)
 
     # --- 4. Read the CSV and run each task ---
     try:
@@ -70,12 +98,23 @@ def main():
                 logging.info("=" * 80)
 
                 # Call the main function from single_task.py
-                run_single_task(
+                perf_metrics = run_single_task(
                     task_id=task_id,
                     task_tag=task_tag,
                     batch_output_dir=batch_output_dir,
                 )
                 logging.info(f"Finished task: {task_id} - {task_tag}")
+
+                # Log the results to the dedicated CSV file.
+                if perf_metrics:
+                    f1 = perf_metrics.get(config.F1_SCORE, "N/A")
+                    roc_auc = perf_metrics.get(config.ROC_AUC, "N/A")
+                    precision = perf_metrics.get(config.PRECISION, "N/A")
+                    recall = perf_metrics.get(config.RECALL, "N/A")
+                    accuracy = perf_metrics.get(config.ACCURACY, "N/A")
+                    results_logger.info(f"{task_id},{task_tag},{f1},{roc_auc},{precision},{recall},{accuracy}")
+                else:
+                    results_logger.info(f"{task_id},{task_tag},N/A,N/A,N/A,N/A,N/A")
 
     except FileNotFoundError:
         logging.error(f"Error: The file was not found at '{args.file}'")

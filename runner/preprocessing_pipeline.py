@@ -62,7 +62,7 @@ def train_classifier(
     xtr_df, ytr_df, ktr_df, xte_df, yte_df, kte_df, algo_list, output_dir, seed
 ):
     logging.info("Training classifier... %s", algo_list)
-    get_classifier_func(algo_list)(
+    return get_classifier_func(algo_list)(
         xtr_df=xtr_df,
         ytr_df=ytr_df,
         ktr_df=ktr_df,

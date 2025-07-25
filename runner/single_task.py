@@ -75,7 +75,7 @@ def run_single_task(task_id, task_tag, batch_output_dir, freq_analysis_flag=Fals
 
     if freq_analysis_flag:
         logging.info("Running frequency analysis only.")
-        
+
         import snippets
         snippets.run_frequency_analysis(x_df, RES_DIR)
     else:
@@ -100,7 +100,8 @@ def run_single_task(task_id, task_tag, batch_output_dir, freq_analysis_flag=Fals
             output_dir=OUTPUT_DIR,
         )
         logging.debug("Train DataFrame head: %s", xtr_df.head())
-        train_classifier(
+
+        perf_metrics = train_classifier(
             xtr_df=xtr_df,
             ytr_df=ytr_df,
             ktr_df=ktr_df,
@@ -111,8 +112,8 @@ def run_single_task(task_id, task_tag, batch_output_dir, freq_analysis_flag=Fals
             output_dir=OUTPUT_DIR,
             seed=config.SEED,
         )
-        # train_classifier()
-        # breakpoint()
+        logging.info("Performance metrics for task %s: %s", task_id, perf_metrics)
+        return perf_metrics
 
 
 def test_validate_algo_list():
@@ -135,7 +136,6 @@ def get_batch_dir(res_dir, batch_dir=None):
         datetime_str = datetime.now().strftime("%Y%m%d%H%M")
         batch_dir = f"batch_{datetime_str}"
     batch_out = os.environ.get("BATCH_OUTPUT_DIR", os.path.join(res_dir, batch_dir))
-    logging.info("Creating batch output directory: %s", batch_out)
     os.makedirs(batch_out, exist_ok=True)
     return batch_out
 
@@ -182,9 +182,11 @@ if __name__ == '__main__':
         # xlsx_path = os.path.join(DATA_DIR, "Data.xlsx")
         test_validate_algo_list()
         # run_single_task(task_id="EXP001", task_tag="sw.std-stem.por-ngram.uni-vec.tfidf-clf.lr", batch_output_dir=BATCH_OUTPUT_DIR)
-        run_single_task(
+        perf_metrics = run_single_task(
             task_id=task_id, #"EXP001",
             task_tag=task_tag,#"sw.std-stem.snow-ngram.bi-vec.tfidf-clf.lr",
             batch_output_dir=BATCH_OUTPUT_DIR,
             freq_analysis_flag=args.freq
         )
+        logging.info("Performance metrics for task %s: %s", task_id, perf_metrics)
+        

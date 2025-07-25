@@ -20,6 +20,13 @@ def logistic_regression(
     output_dir, algo_list, seed,
     vectorizer, ngram_range
 ):
+    perf_metrics = set()
+    # F1_SCORE = "f1_score"
+    # ROC_AUC = "roc_auc"
+    # PRECISION = "precision"
+    # RECALL = "recall"
+    # ACCURACY = "accuracy"
+    
     # preproc_name = 'CountVectorizer'
     classifier_name = 'logistic_regression'
     # if using pre-trained vectorizer, pass it here
@@ -70,6 +77,18 @@ def logistic_regression(
     test_score = sklearn.metrics.get_scorer(config.SCORING)(
         searcher.best_estimator_, xte_vals, yte_vals
     )
+    f1_score = sklearn.metrics.f1_score(yte_vals, yte_pred)
+    roc_auc = sklearn.metrics.roc_auc_score(yte_vals, yte_pred_proba)
+    precision = sklearn.metrics.precision_score(yte_vals, yte_pred)
+    recall = sklearn.metrics.recall_score(yte_vals, yte_pred)
+    accuracy = sklearn.metrics.accuracy_score(yte_vals, yte_pred)
+    perf_metrics = {
+        config.F1_SCORE: f1_score,
+        config.ROC_AUC: roc_auc,
+        config.PRECISION: precision,
+        config.RECALL: recall,
+        config.ACCURACY: accuracy
+    }
 
     best_estimator_results = {
         "best_params": searcher.best_params_,
@@ -81,6 +100,8 @@ def logistic_regression(
     best_estimator_df.to_csv(best_estimator_file_path, index=False)
     logging.info("Wrote best estimator results to: %s", best_estimator_file_path)
     logging.info("Test score: %f", test_score)
+
+    return perf_metrics
 
 def naive_bayes(
     xtr_df,

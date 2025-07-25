@@ -43,3 +43,10 @@ LOGISTIC_REGRESSION = "logistic_regression"
 NAIVE_BAYES = "naive_bayes"
 RANDOM_FOREST = "random_forest"
 XGBOOST = "xgboost"
+
+#performance metrics
+F1_SCORE = "f1_score"
+ROC_AUC = "roc_auc"
+PRECISION = "precision"
+RECALL = "recall"
+ACCURACY = "accuracy"
