@@ -76,7 +76,6 @@ def main():
     # NOTE: Adjust the header based on the actual keys in the dictionary returned by run_single_task.
     results_header = "task_id,task_tag,f1_score,roc_auc,precision,recall,accuracy"
     results_logger.info(results_header)
-
     # --- 4. Read the CSV and run each task ---
     try:
         with open(args.file, mode="r", encoding="utf-8") as infile:

@@ -2,7 +2,9 @@
     "CLF__constructor": "xgboost.XGBClassifier",
     "tree_method": "hist",
     "early_stopping_rounds": 2,
-    
+    "use_label_encoder": "False",
+    "eval_metric": "logloss",
+
     "class_weight": "balanced",
     "max_depth": 6,
     "learning_rate": 0.1,
@@ -13,7 +15,6 @@
     "reg_alpha": 0,
     "reg_lambda": 1,
     "scale_pos_weight": 1,
-    "use_label_encoder": "False",
-    "eval_metric": "logloss",
     "CLF__grid__max_depth": [3, 6, 9]
 }
+

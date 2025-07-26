@@ -136,16 +136,16 @@ def get_ngram(algo_list):
 def get_classifier_func(algo_list):
     if config.CLF_NB in algo_list:
         logging.info("Using Naive Bayes classifier")
-        return clf_tools.naive_bayes_classifier
+        return clf_tools.naive_bayes
     elif config.CLF_LR in algo_list:
         logging.info("Using Logistic Regression classifier")
         return clf_tools.logistic_regression
     elif config.CLF_XGB in algo_list:
         logging.info("Using XGBoost classifier")
-        return clf_tools.xgboost_classifier
+        return clf_tools.xgboost
     elif config.CLF_RF in algo_list:
         logging.info("Using Random Forest classifier")
-        return clf_tools.random_forest_classifier
+        return clf_tools.random_forest
     else:
         raise ValueError(
             "No valid classifier function found in the algorithm list: %s" % algo_list

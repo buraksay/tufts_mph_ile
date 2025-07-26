@@ -35,6 +35,6 @@ note batch param is optional. if not provided, system time will be used.
 - [x] implement task list parser
 - [ ] implement bash runner
 
-- [ ] save roc-aux after each run
+- [x] save roc-aux after each run
 - [ ] save confusion matrix after each run
 
