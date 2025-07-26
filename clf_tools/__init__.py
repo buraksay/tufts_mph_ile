@@ -1,2 +1,3 @@
-from .classifier import (logistic_regression, naive_bayes, random_forest,
-                         xgboost)
+from .classifier import (logistic_regression_classifier,
+                         naive_bayes_classifier, random_forest_classifier,
+                         xgboost_classifier)

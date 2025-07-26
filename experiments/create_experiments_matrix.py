@@ -28,7 +28,7 @@ algo_mappings = {
     "Classifier": {
         # config.CLF_LR: {"name": "Logistic Regression", "func": config.LOGISTIC_REGRESSION},
         # config.CLF_NB: {"name": "Naive Bayes", "func": config.NAIVE_BAYES},
-        # config.CLF_RF: {"name": "Random Forest", "func": config.RANDOM_FOREST},
+        config.CLF_RF: {"name": "Random Forest", "func": config.RANDOM_FOREST},
         config.CLF_XGB: {"name": "XGBoost", "func": config.XGBOOST},
     },
 }

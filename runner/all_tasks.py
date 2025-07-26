@@ -119,7 +119,7 @@ def main():
         logging.error(f"Error: The file was not found at '{args.file}'")
         sys.exit(1)
     except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
+        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
         sys.exit(1)
 
     logging.info("All tasks have been processed.")
