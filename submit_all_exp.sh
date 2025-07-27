@@ -1,21 +1,24 @@
 #!/bin/bash
-#SBATCH --job-name=bert_finetune
-#SBATCH --output=bert_finetune_%A_%a.out
-#SBATCH --error=bert_finetune_%A_%a.err
+#SBATCH --job-name=tufts_mph_ile_xgboost
+#SBATCH --output=tufts_mph_ile_xgboost_%A_%a.out
+#SBATCH --error=tufts_mph_ile_xgboost_%A_%a.err
 #SBATCH --nodes=1
 #SBATCH --partition=gpu,preempt
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:a100:1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=2
 #SBATCH --mem-per-cpu=32GB
 #SBATCH --time=24:00:00
-#SBATCH --array=0-79  # Run 20 jobs, numbered 0 to 19
 
+#/cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/results
 module purge
-module load miniforge/25.3.0-3
+module load miniforge
+module load cuda
+modula load memforge
 
 # Activate your conda environment
-source activate nlp4ori2
+source activate
+conda activate nlp4ori
 
 # Set up environment variables
 #export PYTHONPATH=$PYTHONPATH:/path/to/your/code
@@ -27,7 +30,7 @@ source activate nlp4ori2
 
 # Run the Python script, passing the SLURM array task ID as the trial number
 # srun python /cluster/home/bsay01/aphaproject/NLP-for-ORI/training_demo/bert_finetuning_script.py --trial ${SLURM_ARRAY_TASK_ID}
-srun python /cluster/home/bsay01/aphaproject/NLP-for-ORI/training_demo/bert_finetuning_script.py --trial ${SLURM_ARRAY_TASK_ID}
-
+#srun python /cluster/home/bsay01/aphaproject/NLP-for-ORI/training_demo/bert_finetuning_script.py --trial ${SLURM_ARRAY_TASK_ID}
+srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_xgb_only.csv
 
 conda deactivate

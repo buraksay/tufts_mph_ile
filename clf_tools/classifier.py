@@ -7,6 +7,7 @@ import data_tools
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import sklearn.ensemble
 import sklearn.feature_extraction.text
 import sklearn.linear_model
 import sklearn.model_selection
