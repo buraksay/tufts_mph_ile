@@ -115,8 +115,8 @@ def main():
                 else:
                     results_logger.info(f"{task_id},{task_tag},N/A,N/A,N/A,N/A,N/A")
 
-    except FileNotFoundError:
-        logging.error(f"Error: The file was not found at '{args.file}'")
+    except FileNotFoundError as e:
+        logging.error(f"Error: The file was not found", exc_info=True)
         sys.exit(1)
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}", exc_info=True)
