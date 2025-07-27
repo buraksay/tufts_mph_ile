@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=tufts_mph_ile_xgboost
-#SBATCH --output=tufts_mph_ile_xgboost_%A_%a.out
-#SBATCH --error=tufts_mph_ile_xgboost_%A_%a.err
+#SBATCH --job-name=tufts_mph_ile
+#SBATCH --output=tufts_mph_ile_%A_%a.out
+#SBATCH --error=tufts_mph_ile_%A_%a.err
 #SBATCH --nodes=1
 #SBATCH --partition=gpu,preempt
 #SBATCH --ntasks-per-node=1
@@ -14,9 +14,9 @@
 module purge
 module load miniforge
 module load cuda
-module load memforge
 module load glib
 module load gcc
+module list
 
 # Activate your conda environment
 source activate
@@ -33,6 +33,9 @@ conda info
 # Run the Python script, passing the SLURM array task ID as the trial number
 # srun python /cluster/home/bsay01/aphaproject/NLP-for-ORI/training_demo/bert_finetuning_script.py --trial ${SLURM_ARRAY_TASK_ID}
 #srun python /cluster/home/bsay01/aphaproject/NLP-for-ORI/training_demo/bert_finetuning_script.py --trial ${SLURM_ARRAY_TASK_ID}
-srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_xgb_only.csv
+# srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_xgb_only.csv
+srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_lr_only.csv
+srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_rf_only.csv
+# srun python /cluster/tufts/shresthaapha/bsay01/tufts_mph_ile/runner/all_tasks.py --file /cluster/tufts/shresthaapha/bsay01/data/nlp_experiment_matrix_nb_only.csv
 
 conda deactivate
