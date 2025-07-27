@@ -1,5 +1,5 @@
 {
-	"clf_constructor": "sklearn.ensemble.RandomForestClassifier",
+	"CLF__constructor": "sklearn.ensemble.RandomForestClassifier",
     "class_weight": "balanced",
 	"max_depth": "None",
     "criterion": "gini",

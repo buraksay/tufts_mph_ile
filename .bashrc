@@ -1,5 +1,9 @@
 # BASHRC TO USE ON TUFTS HPC MACHINES
 
+
+export LABHOME='/cluster/tufts/shresthaapha/bsay01'
+
+
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
@@ -111,4 +115,7 @@ alias du='du -ch'
  
 # top is atop, just like vi is vim
 alias top='atop'
+
+###################################
+alias cna2='conda activate nlp4ori2'
 

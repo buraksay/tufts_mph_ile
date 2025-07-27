@@ -51,7 +51,7 @@ def validate_algo_list(algo_list, soft_errrors=False):
     missing_algorithms = []
 
     if(algo_list is None or len(algo_list) != 5):
-        raise ValueError(f"The algorithm list must contain exactly 5 elements, but got {len(algo_list)} elements.")
+        raise ValueError(f"The algorithm list must contain exactly 5 elements, but got {algo_list} elements.")
     
     for algo in algo_list:
         if algo not in valid_algorithms:

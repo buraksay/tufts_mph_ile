@@ -10,6 +10,7 @@ import pandas as pd
 import sklearn.feature_extraction.text
 import sklearn.linear_model
 import sklearn.model_selection
+import sklearn.naive_bayes
 import sklearn.pipeline
 import sklearn.preprocessing
 import xgboost
@@ -125,8 +126,8 @@ def logistic_regression_classifier(
     xte_df, yte_df, kte_df, 
     output_dir, algo_list, seed,
     vectorizer, ngram_range):
-    logging.info("Training Linear Regression classifier...")
-    classifier_name = 'linear_regression'
+    logging.info("Training Logistic Regression classifier...")
+    classifier_name = 'logistic_regression'
     return classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
         xte_df, yte_df, kte_df,
         output_dir, algo_list, seed,

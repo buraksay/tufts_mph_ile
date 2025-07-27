@@ -1,12 +1,11 @@
 {
     "CLF__constructor": "xgboost.XGBClassifier",
+    "device": "cuda",
     "random_state": 42,
     "n_estimators": 1000,
     "max_depth": 6,
     "learning_rate": 0.1,
     "eval_metric": "logloss",
-    "CLF__grid_n_estimators": [500, 1000, 1500],
-    "CLF__grid_max_depth": [3, 6, 9],
     "CLF__grid_learning_rate": [0.01, 0.1, 0.2]
 }
 
