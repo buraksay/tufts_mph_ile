@@ -14,7 +14,9 @@
 module purge
 module load miniforge
 module load cuda
-modula load memforge
+module load memforge
+module load glib
+module load gcc
 
 # Activate your conda environment
 source activate
