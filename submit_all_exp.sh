@@ -21,7 +21,7 @@ module load gcc
 # Activate your conda environment
 source activate
 conda activate nlp4ori
-
+conda info
 # Set up environment variables
 #export PYTHONPATH=$PYTHONPATH:/path/to/your/code
 
