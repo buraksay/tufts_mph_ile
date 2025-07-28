@@ -23,6 +23,73 @@ from xgboost import XGBClassifier
 CLF_SRC_DIR = os.path.split(os.path.abspath(__file__))[0]
 
 
+def xgboost_classifier_no_cv(xtr_df, ytr_df, ktr_df,
+    xte_df, yte_df, kte_df,
+    output_dir, algo_list, seed,
+    vectorizer, ngram_range):
+    logging.info("Training XGBoost classifier without cross-validation...")
+    perf_metrics = set()
+    # if using pre-trained vectorizer, pass it here
+    classifier_name = "xgboost"
+    pipe, clf_tuning_kws = make_clf_pipeline(
+        vectorizer,
+        classifier_name,
+        memory_dir=None,
+        vectorizer=None,
+        ngram_range=ngram_range,
+    )
+
+    txt2vec = pipe.named_steps["txt2vec"]
+    clf = pipe.named_steps["clf"]
+
+    # Fix: Pass the first column of the DataFrame (the text data) to the vectorizer
+    xtr_vec = txt2vec.fit_transform(xtr_df.iloc[:, 0])
+    xte_vec = txt2vec.transform(xte_df.iloc[:, 0])
+
+    logging.info("Fitting XGBoost classifier...")
+    # Fix: Pass the first column of the labels DataFrame
+    clf.fit(xtr_vec, ytr_df.iloc[:, 0])
+
+    # logging.info("Vectorizing training data...")
+    # xtr_vec = txt2vec.fit_transform(xtr_df)
+    # xte_vec = txt2vec.transform(xte_df)
+
+    # logging.info("Fitting XGBoost classifier...")
+    # clf.fit(xtr_vec, ytr_df)
+
+    logging.info("Testing XGBoost classifier...")
+
+    xte_vals = [str(doc) for doc in xte_df.values[:, 0]]
+    yte_vals = yte_df.values[:, 0]
+    yte_pred = clf.predict(xte_vec)
+    yte_pred_proba = clf.predict_proba(xte_vec)[:, 1]
+
+    # breakpoint()
+    # conf_matrix = sklearn.metrics.confusion_matrix(yte_vals, yte_pred)
+    # logging.info("Confusion Matrix:\n%s", conf_matrix)
+    # @TODO: save confusion matrix to file
+    # @TODO: save roc-auc to file
+    # score with scoring value
+    test_score = sklearn.metrics.get_scorer(config.SCORING)(clf, xte_vec, yte_vals)
+    f1_score = sklearn.metrics.f1_score(yte_vals, yte_pred)
+    roc_auc = sklearn.metrics.roc_auc_score(yte_vals, yte_pred_proba)
+    precision = sklearn.metrics.precision_score(yte_vals, yte_pred)
+    recall = sklearn.metrics.recall_score(yte_vals, yte_pred)
+    accuracy = sklearn.metrics.accuracy_score(yte_vals, yte_pred)
+    perf_metrics = {config.F1_SCORE: f1_score,config.ROC_AUC: roc_auc,config.PRECISION: precision,config.RECALL: recall,config.ACCURACY: accuracy,}
+    # logging.info("Performance metrics: %s", perf_metrics)
+    # best_estimator_results = {
+    #     "best_params": "N/A",
+    #     "test_score": test_score,
+    # }
+    # best_estimator_df = pd.DataFrame([best_estimator_results])
+    # best_estimator_file_path = os.path.join(output_dir, "best_estimator_results.csv")
+    # best_estimator_df.to_csv(best_estimator_file_path, index=False)
+    # logging.info("Wrote best estimator results to: %s", best_estimator_file_path)
+    # logging.info("Test score: %f", test_score)
+    return perf_metrics
+
+
 def classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
     xte_df, yte_df, kte_df,
     output_dir, algo_list, seed,
@@ -31,7 +98,6 @@ def classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
     # if using pre-trained vectorizer, pass it here
     pipe, clf_tuning_kws = make_clf_pipeline(
         vectorizer, classifier_name, memory_dir=None, vectorizer=None, ngram_range=ngram_range
-        # vectorizer, classifier_name, memory_dir=output_dir, vectorizer=None, ngram_range=ngram_range
     )
     kfold_cv = sklearn.model_selection.StratifiedKFold(
         n_splits=config.N_SPLITS, shuffle=True, random_state=seed

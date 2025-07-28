@@ -142,7 +142,7 @@ def get_classifier_func(algo_list):
         return clf_tools.logistic_regression_classifier
     elif config.CLF_XGB in algo_list:
         logging.info("Using XGBoost classifier")
-        return clf_tools.xgboost_classifier
+        return clf_tools.xgboost_classifier_no_cv
     elif config.CLF_RF in algo_list:
         logging.info("Using Random Forest classifier")
         return clf_tools.random_forest_classifier
