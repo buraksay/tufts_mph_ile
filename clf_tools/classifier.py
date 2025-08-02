@@ -45,28 +45,20 @@ def xgboost_classifier_no_cv(xtr_df, ytr_df, ktr_df,
     # Fix: Pass the first column of the DataFrame (the text data) to the vectorizer
     xtr_vec = txt2vec.fit_transform(xtr_df.iloc[:, 0])
     xte_vec = txt2vec.transform(xte_df.iloc[:, 0])
+    save_fit_tokens(txt2vec, output_dir)
 
     logging.info("Fitting XGBoost classifier...")
     # Fix: Pass the first column of the labels DataFrame
     clf.fit(xtr_vec, ytr_df.iloc[:, 0])
 
-    # logging.info("Vectorizing training data...")
-    # xtr_vec = txt2vec.fit_transform(xtr_df)
-    # xte_vec = txt2vec.transform(xte_df)
-
-    # logging.info("Fitting XGBoost classifier...")
-    # clf.fit(xtr_vec, ytr_df)
-
     logging.info("Testing XGBoost classifier...")
-
     xte_vals = [str(doc) for doc in xte_df.values[:, 0]]
     yte_vals = yte_df.values[:, 0]
     yte_pred = clf.predict(xte_vec)
     yte_pred_proba = clf.predict_proba(xte_vec)[:, 1]
 
-    # breakpoint()
-    # conf_matrix = sklearn.metrics.confusion_matrix(yte_vals, yte_pred)
-    # logging.info("Confusion Matrix:\n%s", conf_matrix)
+    conf_matrix = sklearn.metrics.confusion_matrix(yte_vals, yte_pred)
+    logging.info("Confusion Matrix:\n%s", conf_matrix)
     # @TODO: save confusion matrix to file
     # @TODO: save roc-auc to file
     # score with scoring value
@@ -125,7 +117,8 @@ def classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
     cv_tr_perf_df.to_csv(out_csv_path.format(split="train_cross_val"), index=False)
     cv_va_perf_df.to_csv(out_csv_path.format(split="test_cross_val"), index=False)
     logging.info("Wrote hyper search info to: %s", out_csv_path)
-    save_fit_tokens(searcher.best_estimator_, output_dir)
+    vectorizer = searcher.best_estimator_.named_steps["txt2vec"]
+    save_fit_tokens(vectorizer, output_dir)
 
     xte_vals = [str(doc) for doc in xte_df.values[:, 0]]
     yte_vals = yte_df.values[:, 0]
@@ -259,15 +252,7 @@ def naive_bayes_classifier(
         vectorizer, ngram_range, classifier_name)
 
 
-def save_fit_tokens(best_pipeline, output_dir):
-    """
-    Saves the fitted tokens from the vectorizer in the pipeline to a JSON file.
-    
-    Parameters:
-    best_pipeline (sklearn.pipeline.Pipeline): The trained pipeline containing the vectorizer.
-    output_dir (str): The directory where the tokens will be saved.
-    """
-    vectorizer = best_pipeline.named_steps['txt2vec']
+def save_fit_tokens(vectorizer, output_dir):
     tokens = vectorizer.get_feature_names_out()
     data_tools.save_csv_file(
         pd.DataFrame(tokens, columns=['tokens']),
