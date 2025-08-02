@@ -74,7 +74,7 @@ def main():
     logging.info(f"Logging results to: {results_file_path}")
     # Write the header to the results CSV file.
     # NOTE: Adjust the header based on the actual keys in the dictionary returned by run_single_task.
-    results_header = "task_id,task_tag,f1_score,roc_auc,precision,recall,accuracy"
+    results_header = "task_id,task_tag,f1_score,roc_auc,precision,recall,accuracy,specificity,true_neg,false_neg,true_pos,false_pos"
     results_logger.info(results_header)
     # --- 4. Read the CSV and run each task ---
     try:
@@ -111,9 +111,14 @@ def main():
                     precision = perf_metrics.get(config.PRECISION, "N/A")
                     recall = perf_metrics.get(config.RECALL, "N/A")
                     accuracy = perf_metrics.get(config.ACCURACY, "N/A")
-                    results_logger.info(f"{task_id},{task_tag},{f1},{roc_auc},{precision},{recall},{accuracy}")
+                    specificity = perf_metrics.get(config.SPECIFICITY, "N/A")
+                    true_neg = perf_metrics.get(config.TN, "N/A")
+                    false_neg = perf_metrics.get(config.FN, "N/A")
+                    true_pos = perf_metrics.get(config.TP, "N/A")
+                    false_pos = perf_metrics.get(config.FP, "N/A")
+                    results_logger.info(f"{task_id},{task_tag},{f1},{roc_auc},{precision},{recall},{accuracy},{specificity},{true_neg},{false_neg},{true_pos},{false_pos}")
                 else:
-                    results_logger.info(f"{task_id},{task_tag},N/A,N/A,N/A,N/A,N/A")
+                    results_logger.info(f"{task_id},{task_tag},N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A")
 
     except FileNotFoundError as e:
         logging.error(f"Error: The file was not found", exc_info=True)
