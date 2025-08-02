@@ -41,34 +41,35 @@ def xgboost_classifier_no_cv(xtr_df, ytr_df, ktr_df,
 
     txt2vec = pipe.named_steps["txt2vec"]
     clf = pipe.named_steps["clf"]
-
-    # Fix: Pass the first column of the DataFrame (the text data) to the vectorizer
-    xtr_vec = txt2vec.fit_transform(xtr_df.iloc[:, 0])
-    xte_vec = txt2vec.transform(xte_df.iloc[:, 0])
+    xtr_vec = txt2vec.fit_transform(xtr_df.values[:, 0])
+    xte_vec = txt2vec.transform(xte_df.values[:, 0])
     save_fit_tokens(txt2vec, output_dir)
 
     logging.info("Fitting XGBoost classifier...")
-    # Fix: Pass the first column of the labels DataFrame
-    clf.fit(xtr_vec, ytr_df.iloc[:, 0])
+
+    clf.fit(xtr_vec, ytr_df)
 
     logging.info("Testing XGBoost classifier...")
-    xte_vals = [str(doc) for doc in xte_df.values[:, 0]]
-    yte_vals = yte_df.values[:, 0]
     yte_pred = clf.predict(xte_vec)
     yte_pred_proba = clf.predict_proba(xte_vec)[:, 1]
 
-    conf_matrix = sklearn.metrics.confusion_matrix(yte_vals, yte_pred)
+    logging.info("Accuracy: %f", accuracy_score(yte_df, yte_pred))
+    logging.info("Classification Report:\n%s", classification_report(yte_df, yte_pred))
+    conf_matrix = sklearn.metrics.confusion_matrix(yte_df, yte_pred)
+    tn, fp, fn, tp = conf_matrix.ravel()
     logging.info("Confusion Matrix:\n%s", conf_matrix)
     # @TODO: save confusion matrix to file
     # @TODO: save roc-auc to file
     # score with scoring value
-    test_score = sklearn.metrics.get_scorer(config.SCORING)(clf, xte_vec, yte_vals)
-    f1_score = sklearn.metrics.f1_score(yte_vals, yte_pred)
-    roc_auc = sklearn.metrics.roc_auc_score(yte_vals, yte_pred_proba)
-    precision = sklearn.metrics.precision_score(yte_vals, yte_pred)
-    recall = sklearn.metrics.recall_score(yte_vals, yte_pred)
-    accuracy = sklearn.metrics.accuracy_score(yte_vals, yte_pred)
-    perf_metrics = {config.F1_SCORE: f1_score,config.ROC_AUC: roc_auc,config.PRECISION: precision,config.RECALL: recall,config.ACCURACY: accuracy,}
+    # test_score = sklearn.metrics.get_scorer(config.SCORING)(clf, xte_vec, yte_df)
+    f1_score = sklearn.metrics.f1_score(yte_df, yte_pred)
+    roc_auc = sklearn.metrics.roc_auc_score(yte_df, yte_pred_proba)
+    precision = sklearn.metrics.precision_score(yte_df, yte_pred)
+    recall = sklearn.metrics.recall_score(yte_df, yte_pred)
+    accuracy = sklearn.metrics.accuracy_score(yte_df, yte_pred)
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+    perf_metrics = {config.F1_SCORE: f1_score,config.ROC_AUC: roc_auc,config.PRECISION: precision,config.RECALL: recall,
+                    config.ACCURACY: accuracy, config.SPECIFICITY: specificity, config.TN: tn, config.FP: fp, config.TP: tp, config.FN: fn}
     # logging.info("Performance metrics: %s", perf_metrics)
     # best_estimator_results = {
     #     "best_params": "N/A",
@@ -127,6 +128,7 @@ def classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
 
     conf_matrix = sklearn.metrics.confusion_matrix(yte_vals, yte_pred)
     logging.info("Confusion Matrix:\n%s", conf_matrix)  
+    tn, fp, fn, tp = conf_matrix.ravel()
     # @TODO: save confusion matrix to file
     # @TODO: save roc-auc to file
     # score with scoring value
@@ -138,12 +140,18 @@ def classify_with_kfold_cv(xtr_df, ytr_df, ktr_df,
     precision = sklearn.metrics.precision_score(yte_vals, yte_pred)
     recall = sklearn.metrics.recall_score(yte_vals, yte_pred)
     accuracy = sklearn.metrics.accuracy_score(yte_vals, yte_pred)
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
     perf_metrics = {
         config.F1_SCORE: f1_score,
         config.ROC_AUC: roc_auc,
         config.PRECISION: precision,
         config.RECALL: recall,
-        config.ACCURACY: accuracy
+        config.ACCURACY: accuracy,
+        config.SPECIFICITY: specificity,
+        config.TN: tn,
+        config.FP: fp,
+        config.TP: tp,
+        config.FN: fn
     }
     best_estimator_results = {
         "best_params": searcher.best_params_,
