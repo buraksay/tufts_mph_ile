@@ -9,14 +9,16 @@ def combine_results_csv():
     Combines multiple CSV result files from a specified directory into a single CSV file.
     """
     # Define the directory where the result files are located.
-    results_dir = "/Users/baba/proj/aphaproject/tufts_mph_ile/results/results/"
+    results_dir = "/Users/baba/proj/aphaproject/tufts_mph_ile/results/newres/"
 
     # List of the specific CSV files to be combined.
     files_to_combine = [
-        "naive_new_stopwords_batch_run_results.csv",
-        "rf_new_stopwords_batch_run_results.csv",
-        "xgboost_new_stopwords_no_cv_batch_run_results.csv",
-        "lr_new_stopwords_batch_run_results.csv",
+        "batch_run_results_part1.csv",
+        "batch_run_results_part2.csv"
+        # "naive_new_stopwords_batch_run_results.csv",
+        # "rf_new_stopwords_batch_run_results.csv",
+        # "xgboost_new_stopwords_no_cv_batch_run_results.csv",
+        # "lr_new_stopwords_batch_run_results.csv",
     ]
 
     # Create a list to hold the dataframes
@@ -41,7 +43,7 @@ def combine_results_csv():
     combined_df = pd.concat(df_list, ignore_index=True)
 
     # Define the output file path
-    output_filename = "combined_results_new_stopwords.csv"
+    output_filename = "combined_results_20250803.csv"
     output_path = os.path.join(results_dir, output_filename)
 
     # Save the combined dataframe to a new CSV file

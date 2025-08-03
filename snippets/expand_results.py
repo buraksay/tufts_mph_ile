@@ -34,9 +34,9 @@ def expand_results():
     Expands the task_tag column in the results CSV file into separate columns
     with human-friendly names for each technique component.
     """
-    results_dir = "/Users/baba/proj/aphaproject/tufts_mph_ile/results/results/"
-    input_file = os.path.join(results_dir, "combined_results_new_stopwords-20250728.csv")
-    output_file = os.path.join(results_dir, "expanded_results_new_stopwords-20250728.csv")
+    results_dir = "/Users/baba/proj/aphaproject/tufts_mph_ile/results/newres/"
+    input_file = os.path.join(results_dir, "combined_results_20250803.csv")
+    output_file = os.path.join(results_dir, "expanded_results_20250803.csv")
     try:
         df = pd.read_csv(input_file)
         print(f"Successfully loaded {input_file}")
